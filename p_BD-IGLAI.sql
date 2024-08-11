@@ -208,3 +208,34 @@ SELECT e.nombre AS estudiante_nombre, en.calificacion, en.fecha
 FROM estudiante e
 JOIN examen_nivelacion en ON e.correo_estu = en.correo_estu
 WHERE e.correo_estu = 'estudiante1@anai.edu.ec';  
+
+-- Actualizar la Cantidad de Estudiantes en un Curso
+DELIMITER $$
+
+CREATE TRIGGER update_student_count AFTER INSERT ON estudiante
+FOR EACH ROW
+BEGIN
+    UPDATE curso
+    SET cant_estudiante = cant_estudiante + 1
+    WHERE id_curso = NEW.id_curso;
+END$$
+
+DELIMITER ;
+-- Crear un Nuevo Estudiante
+INSERT INTO estudiante (correo_estu, nombre, telefono, direccion, fecha_nacimiento, id_curso, correo_tecni, correo_profe)
+VALUES ('nuevo_estudiante@ejemplo.com', 'Estudiante Nuevo', '0987654329', 'Nueva Dirección', '2002-09-09', 1, 'tecnico@ejemplo.com', 'profesor@ejemplo.com');
+
+-- leer informacion 
+SELECT e.nombre AS estudiante, e.telefono, e.direccion, e.fecha_nacimiento, 
+       c.material_estudio, c.plan_estudio, c.nivel, c.horario,
+       p.nombre AS profesor, t.nombre AS tecnico
+FROM estudiante e
+JOIN curso c ON e.id_curso = c.id_curso
+JOIN profesor p ON c.correo_profe = p.correo_profe
+JOIN tecnico t ON e.correo_tecni = t.correo_tecni
+WHERE e.correo_estu = 'nuevo_estudiante@ejemplo.com';
+
+-- Actualizar un Curso con Validación
+UPDATE curso
+SET plan_estudio = 'Plan Avanzado', nivel = 'Avanzado', horario = 'Martes 18:00-20:00'
+WHERE id_curso = 1 AND cant_estudiante <= 20;
